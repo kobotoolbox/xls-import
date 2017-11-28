@@ -1,6 +1,9 @@
 import xlrd
 import sys
-import xml.etree.ElementTree as ET
+# import xml.etree.ElementTree as ET
+# switch to lxml.etree, per
+# https://stackoverflow.com/questions/3095434/inserting-newlines-in-xml-file-generated-via-xml-etree-elementtree-in-python
+from lxml import etree as ET
 
 """
 sample command line:
@@ -40,12 +43,14 @@ def gen_xml(path):
     tree = ET.ElementTree(root)
     print '<?xml version="1.0" ?>'
 
-    for colname in data_sheet1.row_values(0)[:5]:
+    for i, colname in enumerate(data_sheet1.row_values(0)[:5]):
         colname = ET.SubElement(root, colname)
+        colname.text = data_sheet1.cell(1,i).value
+
     ET.SubElement(root,"meta")
     tree = ET.ElementTree(root)
 
-    tree.write(sys.stdout)
+    tree.write(sys.stdout, pretty_print=True)
 
 #----------------------------------------------------------------------
 if __name__ == "__main__":
