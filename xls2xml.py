@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 """
 sample command line:
-python xls2xml.py xls-to-xml-test.xlsx a123456789098765432123
+python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6
 """
 
 """
