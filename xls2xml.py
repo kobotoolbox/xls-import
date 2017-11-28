@@ -1,9 +1,19 @@
 import xlrd
 import sys
+import uuid
 # import xml.etree.ElementTree as ET
 # switch to lxml.etree, per
 # https://stackoverflow.com/questions/3095434/inserting-newlines-in-xml-file-generated-via-xml-etree-elementtree-in-python
 from lxml import etree as ET
+import lxml.builder as builder
+#
+# E = builder.ElementMaker(namespace='http://www.cs.rpi.edu/XGMML',
+#                          nsmap={None: 'http://www.cs.rpi.edu/XGMML',
+#                          'jr': 'http://openrosa.org/javarosa',
+#                          'xlink': 'http://www.w3.org/1999/xlink',
+#                          'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+#                          'cy': 'http://www.cytoscape.org', })
+# graph = E.graph(label="Test", directed="1")
 
 """
 sample command line:
@@ -27,6 +37,10 @@ python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6
         </aZCyzqYa2aqEtf2945cna6>
 """
 
+
+NSMAP = {"jr" :  'http://openrosa.org/javarosa',
+         "orx" : 'http://openrosa.org/xforms'}
+
 #----------------------------------------------------------------------
 def gen_xml(path):
     """
@@ -37,17 +51,29 @@ def gen_xml(path):
     # get the first worksheet
     data_sheet1 = book.sheet_by_index(0)
 
+    # get column names, __version__ index, and version value
+    colnames = data_sheet1.row_values(0)
+    VERSION_COL_INDEX = colnames.index("__version__")
+    VERSION = data_sheet1.cell(1,VERSION_COL_INDEX).value
+
     root = ET.Element(kpi_uid)
     root.set('id', kpi_uid)
+    root.set("version", VERSION)
+
     elem = ET.SubElement(root, "formhub")
     tree = ET.ElementTree(root)
     print '<?xml version="1.0" ?>'
 
-    for i, colname in enumerate(data_sheet1.row_values(0)[:5]):
+    slice_index = VERSION_COL_INDEX + 1
+    for i, colname in enumerate(colnames[:slice_index]):
         colname = ET.SubElement(root, colname)
         colname.text = data_sheet1.cell(1,i).value
 
-    ET.SubElement(root,"meta")
+    meta = ET.SubElement(root,"meta")
+    instance_ID = ET.SubElement(meta, "instanceID")
+    # This line will need to change after the first row is accounted for
+    instance_ID.text = data_sheet1.cell(1,i).value if True else str(uuid.uuid4())
+
     tree = ET.ElementTree(root)
 
     tree.write(sys.stdout, pretty_print=True)
