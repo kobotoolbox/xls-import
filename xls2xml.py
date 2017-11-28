@@ -35,6 +35,7 @@ def gen_xml(path):
     data_sheet1 = book.sheet_by_index(0)
 
     root = ET.Element(kpi_uid)
+    root.set('id', kpi_uid)
     elem = ET.SubElement(root, "formhub")
     tree = ET.ElementTree(root)
     print '<?xml version="1.0" ?>'
