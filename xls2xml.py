@@ -7,7 +7,6 @@ import uuid
 # switch to lxml.etree, per
 # https://stackoverflow.com/questions/3095434/inserting-newlines-in-xml-file-generated-via-xml-etree-elementtree-in-python
 from lxml import etree as ET
-import lxml.builder as builder
 
 """
 -- Sample command line --
