@@ -36,7 +36,6 @@ python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d85
         </aZCyzqYa2aqEtf2945cna6>
 """
 
-
 NSMAP = {"jr" :  'http://openrosa.org/javarosa',
          "orx" : 'http://openrosa.org/xforms'}
 
@@ -63,7 +62,6 @@ def gen_xml(path):
     kc_uuid_el = ET.SubElement(fhub_el, "uuid")
     kc_uuid_el.text = KC_UUID
     tree = ET.ElementTree(root)
-    print '<?xml version="1.0" ?>'
 
     # slice_index will serve both as exclusive upper-bound slice index, and later on as index for _uuid
     slice_index = version_col_index + 1
@@ -77,12 +75,13 @@ def gen_xml(path):
     instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
     tree = ET.ElementTree(root)
-
-    tree.write(sys.stdout, pretty_print=True)
-
+    output_fn = instance_ID_el.text + '.xml'
+    tree.write(output_fn, pretty_print=True, xml_declaration=True,   encoding="utf-8")
 #----------------------------------------------------------------------
+
 if __name__ == "__main__":
     INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
     KPI_UID = sys.argv[2]
     KC_UUID = sys.argv[3]
+
     gen_xml(INPUT_EXCEL_FILE)
