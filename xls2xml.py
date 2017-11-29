@@ -16,11 +16,10 @@ import lxml.builder as builder
 # graph = E.graph(label="Test", directed="1")
 
 """
-sample command line:
-python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6
-"""
+-- Sample command line --
+python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d857dded88d5fb882
 
-"""
+-- Sample xml output --
 <?xml version="1.0" ?>
 <aZCyzqYa2aqEtf2945cna6 xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="aZCyzqYa2aqEtf2945cna6" version="vU6wm35wT9e5Bpr2kf5Jyw">
           <formhub>
@@ -51,30 +50,31 @@ def gen_xml(path):
     # get the first worksheet
     data_sheet1 = book.sheet_by_index(0)
 
-    # get column names, __version__ index, and version value
+    # get column names, __version__ column index, and version value
     colnames = data_sheet1.row_values(0)
-    VERSION_COL_INDEX = colnames.index("__version__")
-    VERSION = data_sheet1.cell(1,VERSION_COL_INDEX).value
+    version_col_index = colnames.index("__version__")
+    version = data_sheet1.cell(1,version_col_index).value
 
-    root = ET.Element(kpi_uid)
-    root.set('id', kpi_uid)
-    root.set("version", VERSION)
+    root = ET.Element(KPI_UID)
+    root.set('id', KPI_UID)
+    root.set("version", version)
 
-    elem = ET.SubElement(root, "formhub")
+    fhub_el = ET.SubElement(root, "formhub")
+    kc_uuid_el = ET.SubElement(fhub_el, "uuid")
+    kc_uuid_el.text = KC_UUID
     tree = ET.ElementTree(root)
     print '<?xml version="1.0" ?>'
 
     # slice_index will serve both as exclusive upper-bound slice index, and later on as index for _uuid
-    slice_index = VERSION_COL_INDEX + 1
+    slice_index = version_col_index + 1
     for i, colname in enumerate(colnames[:slice_index]):
-        colname = ET.SubElement(root, colname)
-        colname.text = data_sheet1.cell(1,i).value
+        colname_el = ET.SubElement(root, colname)
+        colname_el.text = data_sheet1.cell(1,i).value
 
-    meta = ET.SubElement(root,"meta")
-    instance_ID = ET.SubElement(meta, "instanceID")
-    # This line will need to change after the first row is accounted for
+    meta_el = ET.SubElement(root,"meta")
+    instance_ID_el = ET.SubElement(meta_el, "instanceID")
     iID = data_sheet1.cell(1,slice_index).value
-    instance_ID.text = iID if len(iID) > 0 else str(uuid.uuid4())
+    instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
     tree = ET.ElementTree(root)
 
@@ -82,6 +82,7 @@ def gen_xml(path):
 
 #----------------------------------------------------------------------
 if __name__ == "__main__":
-    input_excel_file = sys.argv[1] # "xls-to-xml-test.xlsx"
-    kpi_uid = sys.argv[2]
-    gen_xml(input_excel_file)
+    INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
+    KPI_UID = sys.argv[2]
+    KC_UUID = sys.argv[3]
+    gen_xml(INPUT_EXCEL_FILE)
