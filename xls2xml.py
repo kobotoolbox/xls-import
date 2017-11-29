@@ -64,6 +64,7 @@ def gen_xml(path):
     tree = ET.ElementTree(root)
     print '<?xml version="1.0" ?>'
 
+    # slice_index will serve both as exclusive upper-bound slice index, and later on as index for _uuid
     slice_index = VERSION_COL_INDEX + 1
     for i, colname in enumerate(colnames[:slice_index]):
         colname = ET.SubElement(root, colname)
@@ -72,7 +73,8 @@ def gen_xml(path):
     meta = ET.SubElement(root,"meta")
     instance_ID = ET.SubElement(meta, "instanceID")
     # This line will need to change after the first row is accounted for
-    instance_ID.text = data_sheet1.cell(1,i).value if True else str(uuid.uuid4())
+    iID = data_sheet1.cell(1,slice_index).value
+    instance_ID.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
     tree = ET.ElementTree(root)
 
