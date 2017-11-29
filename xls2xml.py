@@ -55,7 +55,7 @@ def gen_xml(path):
     version_col_index = colnames.index("__version__")
     version = data_sheet1.cell(1,version_col_index).value
 
-    root = ET.Element(KPI_UID)
+    root = ET.Element(KPI_UID, nsmap = NSMAP)
     root.set('id', KPI_UID)
     root.set("version", version)
 
