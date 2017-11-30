@@ -45,27 +45,29 @@ def gen_xml(path):
         version_col_index = colnames.index("__version__")
         version = data_sheet1.cell(1,version_col_index).value
 
+        # create root element
         root = ET.Element(KPI_UID, nsmap = NSMAP)
         root.set('id', KPI_UID)
         root.set("version", version)
-
+        # create formhub element with nested uuid
         fhub_el = ET.SubElement(root, "formhub")
         kc_uuid_el = ET.SubElement(fhub_el, "uuid")
         kc_uuid_el.text = KC_UUID
-        tree = ET.ElementTree(root)
 
         # create elements from the first column up to and including the _version__
-        # slice_index will serve both as exclusive upper-bound slice index, and later on as index for _uuid
         slice_index = version_col_index + 1
         for i, colname in enumerate(colnames[:slice_index]):
             colname_el = ET.SubElement(root, colname)
             colname_el.text = str(data_sheet1.cell(row,i).value)
 
+        # create meta element with nested instanceID
         meta_el = ET.SubElement(root,"meta")
         instance_ID_el = ET.SubElement(meta_el, "instanceID")
-        iID = data_sheet1.cell(row,slice_index).value
+        _uuid_col_index = colnames.index("_uuid")
+        iID = data_sheet1.cell(row, _uuid_col_index).value
         instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
+        #create the xml files
         tree = ET.ElementTree(root)
         output_fn = instance_ID_el.text + '.xml'
         tree.write(output_fn, pretty_print=True, xml_declaration=True,   encoding="utf-8")
