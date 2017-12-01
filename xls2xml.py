@@ -64,19 +64,36 @@ def gen_xml(path):
     book = xlrd.open_workbook(path)
     sheetnames = book.sheet_names()
 
-    # get the first worksheet
+    # Get the first worksheet and column names
     data_sheet1 = book.sheet_by_index(0)
+    colnames = data_sheet1.row_values(0)
 
+    # Identify key column header indices
+    version_col_index = colnames.index("__version__")
+    _uuid_col_index = colnames.index("_uuid")
+    if _has_group(book):
+        _index_col_index = colnames.index("_index")
+
+    # Create dict of headers (not sure this will be needed)
+    headerdict = {}
+
+    for i in range(0, book.nsheets):
+        repeat_sheet = book.sheet_by_index(i)
+        data = [[repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols)] for r in range(1)]
+        headerdict[i] = data
+    print headerdict
+
+
+    # Loop through rows in first datasheet to output XML
     for row in range(1, data_sheet1.nrows):
         # column names, __version__ column index, and version value
-        colnames = data_sheet1.row_values(0)
-        version_col_index = colnames.index("__version__")
-        version = data_sheet1.cell(1,version_col_index).value
+        version = data_sheet1.cell_value(1,version_col_index)
 
         # create root element
         root = ET.Element(KPI_UID, nsmap = NSMAP)
         root.set('id', KPI_UID)
         root.set("version", version)
+
         # create formhub element with nested uuid
         fhub_el = ET.SubElement(root, "formhub")
         kc_uuid_el = ET.SubElement(fhub_el, "uuid")
@@ -86,24 +103,36 @@ def gen_xml(path):
         slice_index = version_col_index + 1
         for i, colname in enumerate(colnames[:version_col_index]):
             colname_el = ET.SubElement(root, colname)
-            colname_el.text = str(data_sheet1.cell(row,i).value)
+            colname_el.text = str(data_sheet1.cell_value(row,i))
 
-        # begin work on repeating fields
+        # Begin work on repeating fields.
+        # Some of this, like getting the index of the _parent_index belongs outside the row loop.
         if _has_group(book):
-            for sheet in sheetnames[1:]:
-                pass
+            for j, sheet in enumerate(sheetnames[1:]):
+                repeat_sheet = book.sheet_by_name(sheet)
+                print "from data_sheet1", data_sheet1.cell_value(row, _index_col_index)
+                colnames_repeats =repeat_sheet.row_values(0)
+                print 'colnames_repeats', colnames_repeats
+                parent_index = colnames_repeats.index("_parent_index")
+                print "parent index data", repeat_sheet.col_slice(colx=parent_index,
+                                                                  start_rowx=0,
+                                                                  end_rowx=repeat_sheet.nrows)
+                # print repeat_sheet, j+1
+                # print headerdict[0]
+                # record_index = headerdict[0]_index
+                # print record_index
+                # print [item.value for item in column]
                 # if _id_in_group(book, sheet_index, _index):
                 # sheet_el = ET.SubElement(root, sheet)
 
         # create __version__ element
         version_el = ET.SubElement(root,"__version__")
-        version_el.text = str(data_sheet1.cell(row,version_col_index).value)
+        version_el.text = str(data_sheet1.cell_value(row,version_col_index))
 
         # create meta element with nested instanceID
         meta_el = ET.SubElement(root,"meta")
         instance_ID_el = ET.SubElement(meta_el, "instanceID")
-        _uuid_col_index = colnames.index("_uuid")
-        iID = data_sheet1.cell(row, _uuid_col_index).value
+        iID = data_sheet1.cell_value(row, _uuid_col_index)
         instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
         #create the xml files
