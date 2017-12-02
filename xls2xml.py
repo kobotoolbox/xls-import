@@ -62,11 +62,11 @@ def gen_xml(path):
     Open and read an Excel file
     """
     book = xlrd.open_workbook(path)
-    sheetnames = book.sheet_names()
+    sheetnames0 = book.sheet_names()
 
     # Get the first worksheet and column names
-    data_sheet1 = book.sheet_by_index(0)
-    colnames = data_sheet1.row_values(0)
+    data_sheet0 = book.sheet_by_index(0)
+    colnames = data_sheet0.row_values(0)
 
     # Identify key column header indices
     version_col_index = colnames.index("__version__")
@@ -74,7 +74,11 @@ def gen_xml(path):
     if _has_group(book):
         _index_col_index = colnames.index("_index")
 
+        group_sheet1 = book.sheet_by_index(1)
+        _parent_index_col_index = group_sheet1.row_values(0).index("_parent_index")
+
     # Create dict of headers (not sure this will be needed)
+    book.sheet_by_index(0)
     headerdict = {}
 
     for i in range(0, book.nsheets):
@@ -83,11 +87,20 @@ def gen_xml(path):
         headerdict[i] = data
     print headerdict
 
+    # Create data structure to store lists of row indices keyed by _parent_index
+    group1_indices = {}
+    for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
+        if v in group1_indices:
+            group1_indices[v].append(i)
+        else:
+            group1_indices[v] = [i]
+
+    print group1_indices
 
     # Loop through rows in first datasheet to output XML
-    for row in range(1, data_sheet1.nrows):
+    for row in range(1, data_sheet0.nrows):
         # column names, __version__ column index, and version value
-        version = data_sheet1.cell_value(1,version_col_index)
+        version = data_sheet0.cell_value(1,version_col_index)
 
         # create root element
         root = ET.Element(KPI_UID, nsmap = NSMAP)
@@ -103,20 +116,20 @@ def gen_xml(path):
         slice_index = version_col_index + 1
         for i, colname in enumerate(colnames[:version_col_index]):
             colname_el = ET.SubElement(root, colname)
-            colname_el.text = str(data_sheet1.cell_value(row,i))
+            colname_el.text = str(data_sheet0.cell_value(row,i))
 
         # Begin work on repeating fields.
         # Some of this, like getting the index of the _parent_index belongs outside the row loop.
         if _has_group(book):
-            for j, sheet in enumerate(sheetnames[1:]):
+            for j, sheet in enumerate(sheetnames0[1:]):
                 repeat_sheet = book.sheet_by_name(sheet)
-                print "from data_sheet1", data_sheet1.cell_value(row, _index_col_index)
-                colnames_repeats =repeat_sheet.row_values(0)
-                print 'colnames_repeats', colnames_repeats
-                parent_index = colnames_repeats.index("_parent_index")
-                print "parent index data", repeat_sheet.col_slice(colx=parent_index,
-                                                                  start_rowx=0,
-                                                                  end_rowx=repeat_sheet.nrows)
+                print "from data_sheet0", data_sheet0.cell_value(row, _index_col_index)
+                # colnames_repeats =repeat_sheet.row_values(0)
+                # print 'colnames_repeats', colnames_repeats
+                # parent_index = colnames_repeats.index("_parent_index")
+                # print "parent index data", repeat_sheet.col_slice(colx=parent_index,
+                #                                                   start_rowx=0,
+                #                                                   end_rowx=repeat_sheet.nrows)
                 # print repeat_sheet, j+1
                 # print headerdict[0]
                 # record_index = headerdict[0]_index
@@ -127,12 +140,12 @@ def gen_xml(path):
 
         # create __version__ element
         version_el = ET.SubElement(root,"__version__")
-        version_el.text = str(data_sheet1.cell_value(row,version_col_index))
+        version_el.text = str(data_sheet0.cell_value(row,version_col_index))
 
         # create meta element with nested instanceID
         meta_el = ET.SubElement(root,"meta")
         instance_ID_el = ET.SubElement(meta_el, "instanceID")
-        iID = data_sheet1.cell_value(row, _uuid_col_index)
+        iID = data_sheet0.cell_value(row, _uuid_col_index)
         instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
         #create the xml files
