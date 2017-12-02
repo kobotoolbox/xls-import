@@ -90,17 +90,16 @@ def gen_xml(path):
     version_col_index =  _get_col_index(0, headerdict, '__version__')
     _uuid_col_index = _get_col_index(0, headerdict, '_uuid')
 
-    # generate variables for one sample group sheet
+    # generate variables for sample group sheet
     if _has_group(book):
         _index_col_index =             _get_col_index(0, headerdict, '_index')
         _parent_table_name_col_index = _get_col_index(1, headerdict, '_parent_table_name')
         _parent_index_col_index =      _get_col_index(1, headerdict, '_parent_index')
 
-        print _parent_table_name_col_index
-
         group_sheet1 = book.sheet_by_index(1)
 
         # Create data structure to store lists of row indices keyed by _parent_index
+        # This will likely eventually go in a loop
         group1_indices = {}
         for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
             if v in group1_indices:
@@ -109,14 +108,6 @@ def gen_xml(path):
                 group1_indices[v] = [i]
 
         print group1_indices
-
-        # Create data structure to store lists of row indices keyed by _parent_index
-        group1_indices = {}
-        for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
-            if v in group1_indices:
-                group1_indices[v].append(i)
-            else:
-                group1_indices[v] = [i]
 
 
     # Loop through rows in first datasheet to output XML
@@ -141,29 +132,34 @@ def gen_xml(path):
             colname_el.text = str(data_sheet0.cell_value(row,i))
 
         # Begin work on repeating fields.
-        # Some of this, like getting the index of the _parent_index belongs outside the row loop.
         if _has_group(book):
-            for j, sheet in enumerate(sheetnames[1:]):
-                repeat_sheet = book.sheet_by_name(sheet)
-                print "from data_sheet0", data_sheet0.cell_value(row, _index_col_index)
+            # note slice, to avoid including the datasheet; To reference sheet number, use enum + 1
+            for enum, gsheet in enumerate(sheetnames[1:]):
+                print enum+1, gsheet, "............."
+                repeat_sheet = book.sheet_by_name(gsheet) # in this example: group_cooking
+                print "from data_sheet0", data_sheet0.cell_value(enum, _index_col_index), "+++"
+
+                #this assumes all the elements of the row will include the same parent table name
                 if data_sheet0.name == repeat_sheet.cell_value(1,_parent_table_name_col_index):
-                    print "paired sheet"
+                    print "===", repeat_sheet.cell_value(1,_parent_table_name_col_index), "==="
+                    print "paired sheet", enum, "--->", enum+1
+                    print group1_indices
+                    print repeat_sheet.cell_value(1,_parent_index_col_index), "repeat_sheet.cell_value(1,_parent_index_col_index)"
 
+                    # print data row index value
+                    index_key = data_sheet0.cell_value(row, _index_col_index)
+                    print index_key, "---index key"
 
+                    if index_key in group1_indices:
+                        print group1_indices[index_key]
+                        for group_row in range(len(group1_indices[index_key])):
+                            sheet_el = ET.SubElement(root, gsheet)
+                            # TODO
+                            # sheet_el.value = repeat_sheet._cell_value(group_row,
 
-                # colnames_repeats =repeat_sheet.row_values(0)
-                # print 'colnames_repeats', colnames_repeats
-                # parent_index = colnames_repeats.index("_parent_index")
-                # print "parent index data", repeat_sheet.col_slice(colx=parent_index,
-                #                                                   start_rowx=0,
-                #                                                   end_rowx=repeat_sheet.nrows)
-                # print repeat_sheet, j+1
-                # print headerdict[0]
-                # record_index = headerdict[0]_index
-                # print record_index
-                # print [item.value for item in column]
-                # if _id_in_group(book, sheet_index, _index):
-                # sheet_el = ET.SubElement(root, sheet)
+                    print round(index_key,1)
+                    print '__________'
+
 
         # create __version__ element
         version_el = ET.SubElement(root,"__version__")
