@@ -55,6 +55,16 @@ python xls2xml.py xls-to-xml-repeats.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8
 NSMAP = {"jr" :  'http://openrosa.org/javarosa',
          "orx" : 'http://openrosa.org/xforms'}
 
+def _has_group(book):
+    return True if book.nsheets > 1 else False
+
+
+def _get_col_index(sheet_index, headerdict, colname):
+    return headerdict[sheet_index].index(colname)
+
+
+def _id_in_group(book, sheet_index, _index):
+    pass
 
 
 def gen_xml(path):
@@ -68,34 +78,46 @@ def gen_xml(path):
     data_sheet0 = book.sheet_by_index(0)
     colnames = data_sheet0.row_values(0)
 
-    # Identify key column header indices
-    version_col_index = colnames.index("__version__")
-    _uuid_col_index = colnames.index("_uuid")
-    if _has_group(book):
-        _index_col_index = colnames.index("_index")
-
-        group_sheet1 = book.sheet_by_index(1)
-        _parent_index_col_index = group_sheet1.row_values(0).index("_parent_index")
-
-    # Create dict of headers (not sure this will be needed)
-    book.sheet_by_index(0)
+    # Create dict of headers
     headerdict = {}
-
     for i in range(0, book.nsheets):
         repeat_sheet = book.sheet_by_index(i)
-        data = [[repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols)] for r in range(1)]
+        data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
         headerdict[i] = data
-    print headerdict
+    print 'headerdict', headerdict
 
-    # Create data structure to store lists of row indices keyed by _parent_index
-    group1_indices = {}
-    for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
-        if v in group1_indices:
-            group1_indices[v].append(i)
-        else:
-            group1_indices[v] = [i]
+    # Identify key column header indices
+    version_col_index =  _get_col_index(0, headerdict, '__version__')
+    _uuid_col_index = _get_col_index(0, headerdict, '_uuid')
 
-    print group1_indices
+    # generate variables for one sample group sheet
+    if _has_group(book):
+        _index_col_index =             _get_col_index(0, headerdict, '_index')
+        _parent_table_name_col_index = _get_col_index(1, headerdict, '_parent_table_name')
+        _parent_index_col_index =      _get_col_index(1, headerdict, '_parent_index')
+
+        print _parent_table_name_col_index
+
+        group_sheet1 = book.sheet_by_index(1)
+
+        # Create data structure to store lists of row indices keyed by _parent_index
+        group1_indices = {}
+        for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
+            if v in group1_indices:
+                group1_indices[v].append(i)
+            else:
+                group1_indices[v] = [i]
+
+        print group1_indices
+
+        # Create data structure to store lists of row indices keyed by _parent_index
+        group1_indices = {}
+        for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
+            if v in group1_indices:
+                group1_indices[v].append(i)
+            else:
+                group1_indices[v] = [i]
+
 
     # Loop through rows in first datasheet to output XML
     for row in range(1, data_sheet0.nrows):
@@ -114,7 +136,7 @@ def gen_xml(path):
 
         # create elements from the first column up to and including the _version__
         slice_index = version_col_index + 1
-        for i, colname in enumerate(colnames[:version_col_index]):
+        for i, colname in enumerate(headerdict[0][:version_col_index]):
             colname_el = ET.SubElement(root, colname)
             colname_el.text = str(data_sheet0.cell_value(row,i))
 
@@ -124,6 +146,10 @@ def gen_xml(path):
             for j, sheet in enumerate(sheetnames[1:]):
                 repeat_sheet = book.sheet_by_name(sheet)
                 print "from data_sheet0", data_sheet0.cell_value(row, _index_col_index)
+                if data_sheet0.name == repeat_sheet.cell_value(1,_parent_table_name_col_index):
+                    print "paired sheet"
+
+
 
                 # colnames_repeats =repeat_sheet.row_values(0)
                 # print 'colnames_repeats', colnames_repeats
@@ -153,13 +179,6 @@ def gen_xml(path):
         tree = ET.ElementTree(root)
         output_fn = instance_ID_el.text + '.xml'
         tree.write(output_fn, pretty_print=True, xml_declaration=True,   encoding="utf-8")
-
-def _has_group(book):
-    return True if book.nsheets > 1 else False
-
-def _id_in_group(book, sheet_index, _index):
-    pass
-
 
 if __name__ == "__main__":
     INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
