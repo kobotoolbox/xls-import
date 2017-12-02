@@ -62,7 +62,7 @@ def gen_xml(path):
     Open and read an Excel file
     """
     book = xlrd.open_workbook(path)
-    sheetnames0 = book.sheet_names()
+    sheetnames = book.sheet_names()
 
     # Get the first worksheet and column names
     data_sheet0 = book.sheet_by_index(0)
@@ -121,9 +121,10 @@ def gen_xml(path):
         # Begin work on repeating fields.
         # Some of this, like getting the index of the _parent_index belongs outside the row loop.
         if _has_group(book):
-            for j, sheet in enumerate(sheetnames0[1:]):
+            for j, sheet in enumerate(sheetnames[1:]):
                 repeat_sheet = book.sheet_by_name(sheet)
                 print "from data_sheet0", data_sheet0.cell_value(row, _index_col_index)
+
                 # colnames_repeats =repeat_sheet.row_values(0)
                 # print 'colnames_repeats', colnames_repeats
                 # parent_index = colnames_repeats.index("_parent_index")
