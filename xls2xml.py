@@ -78,7 +78,7 @@ def _get_headerdict(book):
         repeat_sheet = book.sheet_by_index(i)
         data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
         headerdict[i] = data
-    print 'headerdict', headerdict
+    print 'headerdict'
     return headerdict
 
 
@@ -177,14 +177,21 @@ def gen_xml(path):
                     print index_key, "---index key"
 
                     if index_key in group1_indices:
-                        print group1_indices[index_key]
+                        print "group1_indices[index_key]", group1_indices[index_key]
                         for group_row in range(len(group1_indices[index_key])):
                             sheetname_el = ET.SubElement(root, sheetname)
                             for group_col in range(0,_index1_col_index):
-                                val = repeat_sheet.cell_value(group_row, group_col)
-                                print group_col, val
-                                # TODO remove spaces from val
-                                # group_el = ET.SubElement(sheetname_el,val)
+                                print "group_row", group_row, ":: group_col", group_col
+                                header = repeat_sheet.cell_value(0, group_col)
+                                print "group_col, header", group_col, header
+                                # TODO handle spaces in header
+                                group_el = ET.SubElement(sheetname_el,header)
+                                idx = group1_indices[index_key][group_row]
+                                print idx, "idx"
+                                text = repeat_sheet.cell_value(idx,group_col)
+                                print text, "TEXT"
+                                group_el.text = text
+                                # group_el.text = repeat_sheet.cell_value(group_row,group_col)
                                 # sheet_el.value = repeat_sheet._cell_value(group_row...
 
         # create __version__ element
