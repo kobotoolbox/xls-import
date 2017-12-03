@@ -62,9 +62,41 @@ def _has_group(book):
 def _get_col_index(sheet_index, headerdict, colname):
     return headerdict[sheet_index].index(colname)
 
+def _get_headerdict(book):
+    """Create dict of headers, keyed by sheet index.
 
-def _id_in_group(book, sheet_index, _index):
-    pass
+    Sample dict:
+    {0: [u'start', u'end', u'Name',
+         u'Birthdate', u'age', u'happiness',
+         u'__version__', u'_id', u'_uuid',
+         u'_submission_time', u'_index', u''],
+     1: [u'Cooking Equipment', u'Years Owned', u'_index',
+         u'_parent_table_name', u'_parent_index']}
+    """
+    headerdict = {}
+    for i in range(0, book.nsheets):
+        repeat_sheet = book.sheet_by_index(i)
+        data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
+        headerdict[i] = data
+    print 'headerdict', headerdict
+    return headerdict
+
+
+# def _get_index_dict(book, sheet_index):
+# """
+# Create data structure to store lists of row indices keyed by _parent_index.
+#
+# {3.0: [2, 3], 2.0: [1], u'_parent_index': [0], 4.0: [4, 5], 5.0: [6]}
+#
+# """
+#     group_indices = {}
+#     group_sheet = sheet.get_by_index(sheet_index)
+#     for i, v in enumerate(group_sheet.col_values(_parent_index_col_index)):
+#         if v in group1_indices:
+#             group_indices[v].append(i)
+#         else:
+#             group_indices[v] = [i]
+#     return group_indices
 
 
 def gen_xml(path):
@@ -76,15 +108,8 @@ def gen_xml(path):
 
     # Get the first worksheet and column names
     data_sheet0 = book.sheet_by_index(0)
-    colnames = data_sheet0.row_values(0)
+    headerdict = get_headerdict(book)
 
-    # Create dict of headers
-    headerdict = {}
-    for i in range(0, book.nsheets):
-        repeat_sheet = book.sheet_by_index(i)
-        data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
-        headerdict[i] = data
-    print 'headerdict', headerdict
 
     # Identify key column header indices
     version_col_index =  _get_col_index(0, headerdict, '__version__')
@@ -92,14 +117,15 @@ def gen_xml(path):
 
     # generate variables for sample group sheet
     if _has_group(book):
-        _index_col_index =             _get_col_index(0, headerdict, '_index')
+        _index_col_index             = _get_col_index(0, headerdict, '_index')
+        _index1_col_index            = _get_col_index(1, headerdict, '_index')
         _parent_table_name_col_index = _get_col_index(1, headerdict, '_parent_table_name')
-        _parent_index_col_index =      _get_col_index(1, headerdict, '_parent_index')
+        _parent_index_col_index      = _get_col_index(1, headerdict, '_parent_index')
 
         group_sheet1 = book.sheet_by_index(1)
 
         # Create data structure to store lists of row indices keyed by _parent_index
-        # This will likely eventually go in a loop
+        # This will likely eventually go in a loop, and also might be moved out of the gen_xml() function.
         group1_indices = {}
         for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
             if v in group1_indices:
@@ -133,17 +159,17 @@ def gen_xml(path):
 
         # Begin work on repeating fields.
         if _has_group(book):
-            # note slice, to avoid including the datasheet; To reference sheet number, use enum + 1
-            for enum, gsheet in enumerate(sheetnames[1:]):
-                print enum+1, gsheet, "............."
-                repeat_sheet = book.sheet_by_name(gsheet) # in this example: group_cooking
-                print "from data_sheet0", data_sheet0.cell_value(enum, _index_col_index), "+++"
+            # note sheetnames slice, to avoid including the first datasheet;
+            # To reference sheet number, use enum + 1
+            for enum, sheetname in enumerate(sheetnames[1:]):
+                sheet_index = enum + 1
+                print "sheet_index, sheetname, "............."
+                repeat_sheet = book.sheet_by_name(sheetname) # in this example: group_cooking
 
                 #this assumes all the elements of the row will include the same parent table name
                 if data_sheet0.name == repeat_sheet.cell_value(1,_parent_table_name_col_index):
                     print "===", repeat_sheet.cell_value(1,_parent_table_name_col_index), "==="
-                    print "paired sheet", enum, "--->", enum+1
-                    print group1_indices
+                    print "paired sheet", 0, "--->", sheet_index
                     print repeat_sheet.cell_value(1,_parent_index_col_index), "repeat_sheet.cell_value(1,_parent_index_col_index)"
 
                     # print data row index value
@@ -153,13 +179,9 @@ def gen_xml(path):
                     if index_key in group1_indices:
                         print group1_indices[index_key]
                         for group_row in range(len(group1_indices[index_key])):
-                            sheet_el = ET.SubElement(root, gsheet)
+                            sheet_el = ET.SubElement(root, sheetname)
                             # TODO
                             # sheet_el.value = repeat_sheet._cell_value(group_row,
-
-                    print round(index_key,1)
-                    print '__________'
-
 
         # create __version__ element
         version_el = ET.SubElement(root,"__version__")
@@ -174,7 +196,7 @@ def gen_xml(path):
         #create the xml files
         tree = ET.ElementTree(root)
         output_fn = instance_ID_el.text + '.xml'
-        tree.write(output_fn, pretty_print=True, xml_declaration=True,   encoding="utf-8")
+        tree.write(output_fn, pretty_print=True, xml_declaration=True, encoding="utf-8")
 
 if __name__ == "__main__":
     INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
