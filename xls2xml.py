@@ -6,9 +6,9 @@ import uuid
 from lxml import etree as ET
 
 """
--- Sample command lines --
-python xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d857dded88d5fb882
-python xls2xml.py xls-to-xml-repeats.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d857dded88d5fb882
+-- Sample commands --
+xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d857dded88d5fb882
+xls2xml.py BasicRepeatForm.xlsx vp8Y2sBnY5csBwReweRMGU de70c38d99ce4258bfb70fed1b8f1efa
 
 -- Sample XML output (no repeats) --
 <?xml version="1.0" ?>
@@ -52,159 +52,179 @@ python xls2xml.py xls-to-xml-repeats.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8
         </ayJS36BXDhJRsCsXWmRiPu>
 """
 
-NSMAP = {"jr" :  'http://openrosa.org/javarosa',
-         "orx" : 'http://openrosa.org/xforms'}
-
 def _has_group(book):
     return True if book.nsheets > 1 else False
 
 
-def _get_col_index(sheet_index, headerdict, colname):
-    return headerdict[sheet_index].index(colname)
+def _get_col_index(sheet_index, headers, colname):
+    return headers[sheet_index].index(colname)
 
-def _get_headerdict(book):
+
+def _gen_headers(book):
     """Create dict of headers, keyed by sheet index.
 
     Sample dict:
-    {0: [u'start', u'end', u'Name',
-         u'Birthdate', u'age', u'happiness',
-         u'__version__', u'_id', u'_uuid',
-         u'_submission_time', u'_index', u''],
+    {0: [u'start', u'end', u'Name', u'Birthdate', u'age', u'happiness',
+         u'__version__', u'_id', u'_uuid', u'_submission_time', u'_index', u''],
      1: [u'Cooking Equipment', u'Years Owned', u'_index',
          u'_parent_table_name', u'_parent_index']}
     """
-    headerdict = {}
+    headers = {}
     for i in range(0, book.nsheets):
         repeat_sheet = book.sheet_by_index(i)
         data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
-        headerdict[i] = data
-    print 'headerdict'
-    return headerdict
+        print "data", data
+        headers[i] = data
+    return headers
 
 
-# def _get_index_dict(book, sheet_index):
-# """
-# Create data structure to store lists of row indices keyed by _parent_index.
-#
-# {3.0: [2, 3], 2.0: [1], u'_parent_index': [0], 4.0: [4, 5], 5.0: [6]}
-#
-# """
-#     group_indices = {}
-#     group_sheet = sheet.get_by_index(sheet_index)
-#     for i, v in enumerate(group_sheet.col_values(_parent_index_col_index)):
-#         if v in group1_indices:
-#             group_indices[v].append(i)
-#         else:
-#             group_indices[v] = [i]
-#     return group_indices
+def _gen_group_indices(book, sheet_index):
+    """
+    Create data structure to store lists of row indices keyed by _parent_index.
 
+    Sample dict:
+    {
+        2.0: [1],
+        3.0: [2, 3],
+        4.0: [4, 5],
+        5.0: [6]
+    }
+    """
+    colnames = _gen_headers(book)[sheet_index]
+    g_parent_index_col_index = colnames.index("_parent_index")
+
+    group_indices = {}
+
+    group_sheet = book.sheet_by_index(sheet_index)
+    for group_row, parent_row in enumerate(group_sheet.col_values(g_parent_index_col_index)):
+        if parent_row in group_indices:
+            group_indices[parent_row].append(group_row)
+        else:
+            if str(parent_row).encode('ascii') == '_parent_index':
+                continue
+            group_indices[parent_row] = [group_row]
+
+    return group_indices
+
+def _gen_group_index_list(book):
+    """
+    Create list of group indices keyed by sheetname
+
+    Sample dict:
+    [{
+    u 'group_cooking': {
+        2.0: [1],
+        3.0: [2, 3],
+        4.0: [4, 5],
+        5.0: [6]
+    }
+}, {
+    u 'pets': {
+        2.0: [1],
+        3.0: [2],
+        4.0: [3, 4, 5]
+    }
+}]
+    """
+
+    group_index_list = []
+    groups_indices = {}
+    for s_i, sheetname in enumerate(book.sheet_names()):
+        if s_i == 0:
+            pass
+        else:
+            groups_indices[sheetname] = _gen_group_indices(book, s_i)
+            group_index_list.append(groups_indices)
+            groups_indices = {}
+    return group_index_list
+
+
+def _gen_xml_elements0(book, headers, row):
+    """
+    Create elem dict, which will populate the beginning of the XML file
+    """
+    data_sheet0 = book.sheet_by_index(0)
+
+    version_col_index =  _get_col_index(0, headers, '__version__')
+    version = data_sheet0.cell_value(1,version_col_index)
+
+    NSMAP = {"jr" :  'http://openrosa.org/javarosa',
+         "orx" : 'http://openrosa.org/xforms'}
+
+    # create root element
+    root = ET.Element(KPI_UID, nsmap = NSMAP)
+    root.set('id', KPI_UID)
+    root.set("version", version)
+
+    # create formhub element with nested uuid
+    fhub_el = ET.SubElement(root, "formhub")
+    kc_uuid_el = ET.SubElement(fhub_el, "uuid")
+    kc_uuid_el.text = KC_UUID
+
+    # create elements from the first column up to and including the _version__
+    for i, colname in enumerate(headers[0][:version_col_index]):
+        colname_el = ET.SubElement(root, colname)
+        colname_el.text = str(data_sheet0.cell_value(row,i))
+
+    elems = {row: {}}
+    elems[row]['root'] = root
+
+    return elems
+
+def _gen_group_detail(book, row, headers, data_sheet0, root):
+        group_index_list = _gen_group_index_list(book)
+        _index_col_index = _get_col_index(0, headers, '_index')
+
+        for sheet_i, g_indices in enumerate(group_index_list):
+            sheet_i += 1  # add 1 because group_index_list doesn't include the first worksheet
+            group_sheet = book.sheet_by_index(sheet_i)
+            group_sheetname = group_sheet.name
+            _parent_index = data_sheet0.cell_value(row, _index_col_index)
+            _index1_col_index = _get_col_index(sheet_i, headers, '_index')
+
+            for key, group_indices in g_indices.iteritems():
+                if _parent_index in group_indices.keys():
+                    for group_row in range(len(group_indices[_parent_index])):
+                        group_sheetname_el = ET.SubElement(root, group_sheetname)
+                        for group_col in range(0, _index1_col_index):
+                            header = group_sheet.cell_value(0, group_col)
+                            column_el = ET.SubElement(group_sheetname_el,header)
+                            idx = group_indices[_parent_index][group_row]
+                            text = group_sheet.cell_value(idx,group_col)
+                            column_el.text = text
 
 def gen_xml(path):
     """
     Open and read an Excel file
     """
     book = xlrd.open_workbook(path)
-    sheetnames = book.sheet_names()
+    headers = _gen_headers(book)
+    print headers
 
     # Get the first worksheet and column names
     data_sheet0 = book.sheet_by_index(0)
-    headerdict = _get_headerdict(book)
 
-
-    # Identify key column header indices
-    version_col_index =  _get_col_index(0, headerdict, '__version__')
-    _uuid_col_index = _get_col_index(0, headerdict, '_uuid')
-
-    # generate variables for sample group sheet
-    if _has_group(book):
-        _index_col_index             = _get_col_index(0, headerdict, '_index')
-        _index1_col_index            = _get_col_index(1, headerdict, '_index')
-        _parent_table_name_col_index = _get_col_index(1, headerdict, '_parent_table_name')
-        _parent_index_col_index      = _get_col_index(1, headerdict, '_parent_index')
-
-        group_sheet1 = book.sheet_by_index(1)
-
-        # Create data structure to store lists of row indices keyed by _parent_index
-        # This will likely eventually go in a loop, and also might be moved out of the gen_xml() function.
-        group1_indices = {}
-        for i, v in enumerate(group_sheet1.col_values(_parent_index_col_index)):
-            if v in group1_indices:
-                group1_indices[v].append(i)
-            else:
-                group1_indices[v] = [i]
-
-        print group1_indices
-
-
-    # Loop through rows in first datasheet to output XML
+    # Loop through rows in first worksheet to output XML, including repeating groups
     for row in range(1, data_sheet0.nrows):
-        # column names, __version__ column index, and version value
-        version = data_sheet0.cell_value(1,version_col_index)
+        elems = _gen_xml_elements0(book, headers, row)
+        root = elems[row]['root']
 
-        # create root element
-        root = ET.Element(KPI_UID, nsmap = NSMAP)
-        root.set('id', KPI_UID)
-        root.set("version", version)
-
-        # create formhub element with nested uuid
-        fhub_el = ET.SubElement(root, "formhub")
-        kc_uuid_el = ET.SubElement(fhub_el, "uuid")
-        kc_uuid_el.text = KC_UUID
-
-        # create elements from the first column up to and including the _version__
-        slice_index = version_col_index + 1
-        for i, colname in enumerate(headerdict[0][:version_col_index]):
-            colname_el = ET.SubElement(root, colname)
-            colname_el.text = str(data_sheet0.cell_value(row,i))
-
-        # Begin work on repeating fields.
         if _has_group(book):
-            # note sheetnames slice, to avoid including the first datasheet;
-            # To reference sheet number, use enum + 1
-            for enum, sheetname in enumerate(sheetnames[1:]):
-                sheet_index = enum + 1
-                print sheet_index, sheetname, "............."
-                repeat_sheet = book.sheet_by_name(sheetname) # in this example: group_cooking
+            _gen_group_detail(book, row, headers, data_sheet0, root)
 
-                #this assumes all the elements of the row will include the same parent table name
-                if data_sheet0.name == repeat_sheet.cell_value(1,_parent_table_name_col_index):
-                    print "===", repeat_sheet.cell_value(1,_parent_table_name_col_index), "==="
-                    print "paired sheet", 0, "--->", sheet_index
-                    print repeat_sheet.cell_value(1,_parent_index_col_index), "repeat_sheet.cell_value(1,_parent_index_col_index)"
-
-                    # print data row index value
-                    index_key = data_sheet0.cell_value(row, _index_col_index)
-                    print index_key, "---index key"
-
-                    if index_key in group1_indices:
-                        print "group1_indices[index_key]", group1_indices[index_key]
-                        for group_row in range(len(group1_indices[index_key])):
-                            sheetname_el = ET.SubElement(root, sheetname)
-                            for group_col in range(0,_index1_col_index):
-                                print "group_row", group_row, ":: group_col", group_col
-                                header = repeat_sheet.cell_value(0, group_col)
-                                print "group_col, header", group_col, header
-                                # TODO handle spaces in header
-                                group_el = ET.SubElement(sheetname_el,header)
-                                idx = group1_indices[index_key][group_row]
-                                print idx, "idx"
-                                text = repeat_sheet.cell_value(idx,group_col)
-                                print text, "TEXT"
-                                group_el.text = text
-                                # group_el.text = repeat_sheet.cell_value(group_row,group_col)
-                                # sheet_el.value = repeat_sheet._cell_value(group_row...
-
-        # create __version__ element
+        # Create __version__ element
         version_el = ET.SubElement(root,"__version__")
+        version_col_index = _get_col_index(0,headers, '__version__')
         version_el.text = str(data_sheet0.cell_value(row,version_col_index))
 
-        # create meta element with nested instanceID
+        # Create meta element with nested instanceID
         meta_el = ET.SubElement(root,"meta")
         instance_ID_el = ET.SubElement(meta_el, "instanceID")
+        _uuid_col_index = _get_col_index(0, headers, '_uuid')
         iID = data_sheet0.cell_value(row, _uuid_col_index)
         instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
 
-        #create the xml files
+        # Create the xml files
         tree = ET.ElementTree(root)
         output_fn = instance_ID_el.text + '.xml'
         tree.write(output_fn, pretty_print=True, xml_declaration=True, encoding="utf-8")
