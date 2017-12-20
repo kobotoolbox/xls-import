@@ -52,6 +52,7 @@ xls2xml.py BasicRepeatForm.xlsx vp8Y2sBnY5csBwReweRMGU de70c38d99ce4258bfb70fed1
         </ayJS36BXDhJRsCsXWmRiPu>
 """
 
+
 def _has_group(book):
     return True if book.nsheets > 1 else False
 
@@ -77,7 +78,6 @@ def _gen_headers(book):
         headers[i] = data
     print headers
     return headers
-
 
 def _gen_group_indices(book, sheet_index):
     """
@@ -139,9 +139,20 @@ def _gen_group_index_list(book):
             groups_indices = {}
     return group_index_list
 
-def _handle_multiselects(fieldname):
-    multi_select_set = {}
-    pass
+
+def _parse_multi_select_data(multi_selects, header, text):
+    """ Look at data and if the option is selected, add to multi_selects """
+    if text == '1':
+        name, value = header.split('/')
+        if name not in multi_selects:
+            multi_selects[name] = []
+        multi_selects[name].append(value)
+
+def _gen_multi_selects(parent_node, multi_selects):
+    """ Generate XML elements from multi_selects """
+    for key, value in multi_selects.items():
+        colname_el = ET.SubElement(parent_node, key)
+        colname_el.text = " ".join(value)
 
 def _gen_xml_elements0(book, headers, row):
     """
@@ -166,12 +177,17 @@ def _gen_xml_elements0(book, headers, row):
     kc_uuid_el.text = KC_UUID
 
     # create elements from the first column up to and including the _version__
+    multi_selects = {}
     for i, colname in enumerate(headers[0][:version_col_index]):
+        text0 = str(data_sheet0.cell_value(row,i))
         if "/" in colname:
-            _handle_multiselects(colname)
+            _parse_multi_select_data(multi_selects, colname, text0)
+            # _handle_multiselects(0, fieldnames, text0)
         else:
             colname_el = ET.SubElement(root, colname)
-            colname_el.text = str(data_sheet0.cell_value(row,i))
+            colname_el.text = text0
+
+    _gen_multi_selects(root, multi_selects)
 
     elems = {row: {}}
     elems[row]['root'] = root
@@ -193,15 +209,21 @@ def _gen_group_detail(book, row, headers, data_sheet0, root):
                 if _parent_index in group_indices.keys():
                     for group_row in range(len(group_indices[_parent_index])):
                         group_sheetname_el = ET.SubElement(root, group_sheetname)
+
+                        multi_selects = {}
+
                         for group_col in range(0, _index1_col_index):
                             header = group_sheet.cell_value(0, group_col)
+                            idx = group_indices[_parent_index][group_row]
+                            text = group_sheet.cell_value(idx,group_col)
                             if "/" in header:
-                                _handle_multiselects(header)
+                                _parse_multi_select_data(multi_selects, header, text)
+                                #_handle_multiselects(sheet_i, header, text)
                             else:
                                 column_el = ET.SubElement(group_sheetname_el,header)
-                                idx = group_indices[_parent_index][group_row]
-                                text = group_sheet.cell_value(idx,group_col)
                                 column_el.text = text
+
+                        _gen_multi_selects(group_sheetname_el, multi_selects)
 
 def gen_xml(path):
     """
