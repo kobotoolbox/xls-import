@@ -179,10 +179,9 @@ def _gen_xml_elements0(book, headers, row):
     # create elements from the first column up to and including the _version__
     multi_selects = {}
     for i, colname in enumerate(headers[0][:version_col_index]):
-        text0 = str(data_sheet0.cell_value(row,i))
+        text0 = data_sheet0.cell_value(row,i)
         if "/" in colname:
             _parse_multi_select_data(multi_selects, colname, text0)
-            # _handle_multiselects(0, fieldnames, text0)
         else:
             colname_el = ET.SubElement(root, colname)
             colname_el.text = text0
@@ -254,11 +253,13 @@ def gen_xml(path):
         instance_ID_el = ET.SubElement(meta_el, "instanceID")
         _uuid_col_index = _get_col_index(0, headers, '_uuid')
         iID = data_sheet0.cell_value(row, _uuid_col_index)
-        instance_ID_el.text = iID if len(iID) > 0 else str(uuid.uuid4())
+        iID = iID if len(iID) > 0 else str(uuid.uuid4())
+        output_iID = "uuid:"+iID
+        instance_ID_el.text = output_iID
 
         # Create the xml files
         tree = ET.ElementTree(root)
-        output_fn = instance_ID_el.text + '.xml'
+        output_fn = iID + '.xml'
         tree.write(output_fn, pretty_print=True, xml_declaration=True, encoding="utf-8")
 
 if __name__ == "__main__":
