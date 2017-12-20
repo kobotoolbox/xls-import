@@ -74,9 +74,7 @@ def _gen_headers(book):
     for i in range(0, book.nsheets):
         repeat_sheet = book.sheet_by_index(i)
         data = [repeat_sheet.cell_value(r,c) for c in range(repeat_sheet.ncols) for r in range(1)]
-        print "data", data
         headers[i] = data
-    print headers
     return headers
 
 def _gen_group_indices(book, sheet_index):
