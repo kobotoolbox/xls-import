@@ -6,9 +6,8 @@ import uuid
 from lxml import etree as ET
 
 """
--- Sample commands --
-xls2xml.py xls-to-xml-test.xlsx aZCyzqYa2aqEtf2945cna6 524fc08b8a0e4d8d857dded88d5fb882
-xls2xml.py BasicRepeatForm.xlsx vp8Y2sBnY5csBwReweRMGU de70c38d99ce4258bfb70fed1b8f1efa
+-- Sample command --
+xls2xml.py xls-to-xml-test.xlsx
 
 -- Sample XML output (no repeats) --
 <?xml version="1.0" ?>
@@ -129,7 +128,8 @@ def _gen_group_index_list(book):
     group_index_list = []
     groups_indices = {}
     for s_i, sheetname in enumerate(book.sheet_names()):
-        if s_i == 0:
+        # skip the first sheet and the IDSheet. They do not have repeat data.
+        if s_i == 0 or sheetname == 'IDSheet':
             pass
         else:
             groups_indices[sheetname] = _gen_group_indices(book, s_i)
@@ -157,22 +157,24 @@ def _gen_xml_elements0(book, headers, row):
     Create elem dict, which will populate the beginning of the XML file
     """
     data_sheet0 = book.sheet_by_index(0)
-
-    version_col_index =  _get_col_index(0, headers, '__version__')
+    ID_sheet = book.sheet_by_name('IDSheet')
+    KPI_ID = ID_sheet.cell_value(0,1)
+    KC_ID = ID_sheet.cell_value(1,1)
+    version_col_index = _get_col_index(0, headers, '__version__')
     version = data_sheet0.cell_value(1,version_col_index)
 
     NSMAP = {"jr" :  'http://openrosa.org/javarosa',
          "orx" : 'http://openrosa.org/xforms'}
 
     # create root element
-    root = ET.Element(KPI_UID, nsmap = NSMAP)
-    root.set('id', KPI_UID)
+    root = ET.Element(KPI_ID, nsmap = NSMAP)
+    root.set('id', KPI_ID)
     root.set("version", version)
 
     # create formhub element with nested uuid
     fhub_el = ET.SubElement(root, "formhub")
     kc_uuid_el = ET.SubElement(fhub_el, "uuid")
-    kc_uuid_el.text = KC_UUID
+    kc_uuid_el.text = KC_ID
 
     # create elements from the first column up to and including the _version__
     multi_selects = {}
@@ -262,7 +264,5 @@ def gen_xml(path):
 
 if __name__ == "__main__":
     INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
-    KPI_UID = sys.argv[2]
-    KC_UUID = sys.argv[3]
 
     gen_xml(INPUT_EXCEL_FILE)
