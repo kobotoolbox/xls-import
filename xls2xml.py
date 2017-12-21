@@ -152,6 +152,20 @@ def _gen_multi_selects(parent_node, multi_selects):
         colname_el = ET.SubElement(parent_node, key)
         colname_el.text = " ".join(value)
 
+def _parse_group_data(groups, header, text):
+    name, value = header.split('::')
+    if name not in groups:
+            groups[name] = {}
+    groups[name][value]=text
+
+def _gen_groups(root, groups):
+    for key, value in groups.items():
+        colname_el = ET.SubElement(root, key)
+        for k, v in value.items():
+            el = ET.SubElement(colname_el, k)
+            el.text = v
+
+
 def _gen_xml_elements0(book, headers, row):
     """
     Create elem dict, which will populate the beginning of the XML file
@@ -178,15 +192,19 @@ def _gen_xml_elements0(book, headers, row):
 
     # create elements from the first column up to and including the _version__
     multi_selects = {}
+    groups = {}
     for i, colname in enumerate(headers[0][:version_col_index]):
         text0 = data_sheet0.cell_value(row,i)
         if "/" in colname:
             _parse_multi_select_data(multi_selects, colname, text0)
+        if "::" in colname:
+            _parse_group_data(groups, colname, text0)
         else:
             colname_el = ET.SubElement(root, colname)
             colname_el.text = text0
 
     _gen_multi_selects(root, multi_selects)
+    _gen_groups(root, groups)
 
     elems = {row: {}}
     elems[row]['root'] = root
@@ -217,7 +235,6 @@ def _gen_group_detail(book, row, headers, data_sheet0, root):
                             text = group_sheet.cell_value(idx,group_col)
                             if "/" in header:
                                 _parse_multi_select_data(multi_selects, header, text)
-                                #_handle_multiselects(sheet_i, header, text)
                             else:
                                 column_el = ET.SubElement(group_sheetname_el,header)
                                 column_el.text = text
