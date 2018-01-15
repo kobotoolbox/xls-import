@@ -4,6 +4,10 @@ import xlrd
 import sys
 import uuid
 from lxml import etree as ET
+import os, errno
+import shutil
+
+
 
 """
 -- Sample command --
@@ -274,12 +278,23 @@ def gen_xml(path):
         output_iID = "uuid:"+iID
         instance_ID_el.text = output_iID
 
-        # Create the xml files
+        # Create the xml files and a final zip file
         tree = ET.ElementTree(root)
-        output_fn = iID + '.xml'
+        temp_path = "tempfiles/"
+
+        try:
+            os.makedirs(temp_path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+        output_fn = temp_path + iID + '.xml'
         tree.write(output_fn, pretty_print=True, xml_declaration=True, encoding="utf-8")
+        shutil.make_archive('xmlfiles', 'zip','tempfiles')
+
 
 if __name__ == "__main__":
     INPUT_EXCEL_FILE = sys.argv[1] # "xls-to-xml-test.xlsx"
+    shutil.rmtree("tempfiles/", ignore_errors=True)
 
     gen_xml(INPUT_EXCEL_FILE)
