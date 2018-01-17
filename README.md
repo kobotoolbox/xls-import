@@ -22,21 +22,19 @@ $ python xls2xml.py SPREADSHEETNAME.xlsx
 1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter. All columns need to be formatted as text prior to entering '1' or '0'
 1. Repeating groups appear in a new sheet
 1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
- 
+
 
 
 ## post.py
 
 post.py will post tempfiles/*.xml to kc.kobotools.or:
 
-```
-$ pip install requests
-```
 Before you run post.py:
 - Copy the example-.netrc file to your home directory
 - Update with your login credentials
 - Rename to .netrc, or append to existing ~/.netrc (Check to see if ~/.netrc already exists before renaming)
 
 ```
+$ pip install requests
 $ python post.py
 ```
