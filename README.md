@@ -38,3 +38,8 @@ Before you run post.py:
 $ pip install requests
 $ python post.py
 ```
+
+Note: post.py outputs a date-stamped log with a name such as: ```kcpostlog__2018-01-16_18-04.csv```. After running the program, this will usually be the last file created. To view the file, it may be easier to run the following command than to try to type out the full filename.
+```
+$ more "$(ls -rt | tail -n1)"
+```
