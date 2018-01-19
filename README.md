@@ -27,12 +27,13 @@ $ python xls2xml.py SPREADSHEETNAME.xlsx
 
 ## post.py
 
-post.py will post tempfiles/*.xml to kc.kobotools.or:
+post.py will post tempfiles/*.xml to kc.kobotools.org:
 
 Before you run post.py:
 - Check (and double-check) to see if a ~/.netrc file already exists. If not, create it.
 - Ensure that the permissions on the ~/.netrc file are read/write, restricting access to only the owner. The chmod command below will do that.
-- Using the example-.netrc file as a guide, update  ~/.netrc with your login credentials. If the file already existed, just append the three lines to what was already there.
+- Using the example-.netrc file as a guide, update  ~/.netrc with your login credentials. (If the file already existed, just append the three lines to what was already there.)
+- If you are not using kc.kobotoolbox.org as your destination server, update the .netrc host, server URL, and log filename prefix in post.py (lines 10–12).
 
 ```
 $ chmod 600 $HOME/.netrc
