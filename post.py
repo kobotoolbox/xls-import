@@ -15,9 +15,20 @@ homedir = os.path.expanduser('~')
 info = netrc.netrc(homedir + "/.netrc")
 username, account, password = info.authenticators(netrc_host)
 
+
+class LazyFile(object):
+
+    def __init__(self, filename, mode):
+        self.filename = filename
+        self.mode = mode
+
+    def read(self):
+        with open(self.filename, self.mode) as f:
+            return f.read()
+
 filelist = glob.glob("tempfiles/*.xml")
 
-filelist_tuples = [(f, open(f, 'rb')) for f in filelist]
+filelist_tuples = [(f, LazyFile(f, 'rb')) for f in filelist]
 filelist_tuples = tuple(filelist_tuples)
 
 logdata = []
