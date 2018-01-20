@@ -7,9 +7,9 @@ import csv
 import re
 
 # Set .netrc host, server URL, and log filename prefix.
-netrc_host = 'kc.kobotoolbox.org' # This should match entry in .netrc file
-server_url = 'https://kc.kobotoolbox.org/submission'
-log_prefix = 'kc'
+netrc_host = 'kc.du.kbtdev.org' # This should match entry in .netrc file
+server_url = 'https://kc.du.kbtdev.org/submission'
+log_prefix = 'kc.du.'
 
 homedir = os.path.expanduser('~')
 info = netrc.netrc(homedir + "/.netrc")
