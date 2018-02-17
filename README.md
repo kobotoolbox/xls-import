@@ -12,7 +12,7 @@ $ python xls2xml.py SPREADSHEETNAME.xlsx
 ```
 
 #### Underlying Spreadsheet Rules
-1. The spreadsheet must include a worksheet (following all the content worksheets) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID. These two IDs will be provided to you.
+1. The spreadsheet must include a worksheet (following all the content worksheets) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID. Refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
 
     ![screen shot 2017-12-20 at 10 58 17 pm](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
 
@@ -45,3 +45,23 @@ Note: post.py outputs a date-stamped log with a name such as: ```kcpostlog__2018
 ```
 $ more "$(ls -rt | tail -n1)"
 ```
+
+# Frequently Asked Questions
+
+- [I get an XLRDError](#i-get-an-xlrderror)
+- [How do I determine the KPI and KC IDs?](#how-do-i-determine-the-kpi-and-kc-ids)
+
+
+## I get an XLRDError
+
+If you get
+```
+xlrd.biffh.XLRDError: No sheet named <'IDSheet'>
+```
+be sure to add a new sheet named
+'IDSheet'. Place the KPI ID in cell B1, and the KC ID in cell B2.
+
+## How do I determine the KPI and KC IDs?
+Refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
+
+
