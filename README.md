@@ -21,7 +21,7 @@ $ python xls2xml.py SPREADSHEETNAME.xlsx
 1. Select_multiples columns may be formatted either like column G in the image below, or as boolean columns like columns H - K.
 1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter. All columns need to be formatted as text prior to entering '1' or '0'
 1. Repeating groups appear in a new sheet
-1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
+1. Non-repeating groups appear in the first sheet. columns contain double colon characters (`::`) as a hierarchy separator, such as `group_recent_haircuts::Last_Haircut`
 
 
 
