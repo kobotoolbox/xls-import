@@ -205,7 +205,7 @@ def _gen_xml_elements0(book, headers, row):
             _parse_group_data(groups, colname, text0)
         else:
             colname_el = ET.SubElement(root, colname)
-            colname_el.text = text0
+            colname_el.text = str(text0)
 
     _gen_multi_selects(root, multi_selects)
     _gen_groups(root, groups)
