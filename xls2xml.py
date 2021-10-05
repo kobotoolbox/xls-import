@@ -241,7 +241,7 @@ def _gen_group_detail(book, row, headers, data_sheet0, root):
                                 _parse_multi_select_data(multi_selects, header, text)
                             else:
                                 column_el = ET.SubElement(group_sheetname_el,header)
-                                column_el.text = text
+                                column_el.text = str(text)
 
                         _gen_multi_selects(group_sheetname_el, multi_selects)
 
