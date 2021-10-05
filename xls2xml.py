@@ -167,7 +167,7 @@ def _gen_groups(root, groups):
         colname_el = ET.SubElement(root, key)
         for k, v in value.items():
             el = ET.SubElement(colname_el, k)
-            el.text = v
+            el.text = str(v)
 
 
 def _gen_xml_elements0(book, headers, row):
