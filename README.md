@@ -19,12 +19,12 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 #### Underlying Spreadsheet Rules
 1. The spreadsheet should be formatted as an excel 97-2003 workbook, so with the .xls extention
 1. The spreadsheet must include a worksheet (following all the content worksheets, so it should be the last worksheet in your xls-file) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID.
-2. The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
-2. The KC ID can be easily found with the api:
-3. Navigate to https://kcnew.ifrc.org/api/v1/forms (or the v1 api of your server)
-3. Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
-3. Look for the corresponding "uuid", a 32 character long string. This is the KC ID
-2. If this option does not work, refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
+	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
+	* The KC ID can be easily found with the api:
+		* Navigate to https://kcnew.ifrc.org/api/v1/forms (or the v1 api of your server)
+		* Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
+		* Look for the corresponding "uuid", a 32 character long string. This is the KC ID
+		* If this option does not work, refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
 
     ![screen shot 2017-12-20 at 10 58 17 pm](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
 
