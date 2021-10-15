@@ -29,16 +29,16 @@ xls2xml.py xls-to-xml-test.xlsx
           </meta>
         </aZCyzqYa2aqEtf2945cna6>
 
--- Sample XML output (with repeats) --
-<?xml version="1.0" ?>
-<ayJS36BXDhJRsCsXWmRiPu xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="ayJS36BXDhJRsCsXWmRiPu" version="vZSdJcLdcv3vuwdgiNeSeR">
-          <formhub>
-            <uuid>ca8356db0ef6463685af4b071c537722</uuid>
-          </formhub>
-          <start>2017-11-29T16:10:15.000-05:00</start>
-          <end>2017-11-29T16:12:55.000-05:00</end>
-          <Name>Minnie Mouse</Name>
-          <Birthdate>1928-10-18</Birthdate>
+    -- Sample XML output (with repeats) --
+    <?xml version="1.0" ?>
+    <ayJS36BXDhJRsCsXWmRiPu xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="ayJS36BXDhJRsCsXWmRiPu" version="vZSdJcLdcv3vuwdgiNeSeR">
+              <formhub>
+                <uuid>ca8356db0ef6463685af4b071c537722</uuid>
+              </formhub>
+              <start>2017-11-29T16:10:15.000-05:00</start>
+              <end>2017-11-29T16:12:55.000-05:00</end>
+              <Name>Minnie Mouse</Name>
+              <Birthdate>1928-10-18</Birthdate>
           <age>89</age>
           <happiness>yes</happiness>
           <group_cooking>
@@ -167,7 +167,7 @@ def _gen_groups(root, groups):
         colname_el = ET.SubElement(root, key)
         for k, v in value.items():
             el = ET.SubElement(colname_el, k)
-            el.text = v
+            el.text = unicode(v)
 
 
 def _gen_xml_elements0(book, headers, row):
@@ -205,7 +205,7 @@ def _gen_xml_elements0(book, headers, row):
             _parse_group_data(groups, colname, text0)
         else:
             colname_el = ET.SubElement(root, colname)
-            colname_el.text = text0
+            colname_el.text = unicode(text0)
 
     _gen_multi_selects(root, multi_selects)
     _gen_groups(root, groups)
@@ -241,7 +241,7 @@ def _gen_group_detail(book, row, headers, data_sheet0, root):
                                 _parse_multi_select_data(multi_selects, header, text)
                             else:
                                 column_el = ET.SubElement(group_sheetname_el,header)
-                                column_el.text = text
+                                column_el.text = unicode(text)
 
                         _gen_multi_selects(group_sheetname_el, multi_selects)
 
