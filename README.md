@@ -19,10 +19,12 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 #### Underlying Spreadsheet Rules
 1. The spreadsheet should be formatted as an excel 97-2003 workbook, so with the .xls extention
 1. The spreadsheet must include a worksheet (following all the content worksheets, so it should be the last worksheet in your xls-file) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID.
+
     ![IDs](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
-	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
+
+	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://<span></span>kobo.humanitarianresponse.info/#/forms/"KPI ID"/summary, or whatever server you are using)
 	* The KC ID can be easily found with the api:
-		* Navigate to https://kcnew.ifrc.org/api/v1/forms (or the v1 api of your server)
+		* Navigate to https://kc.humanitarianresponse.info/api/v1/forms (or the v1 api of your server)
 		* Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
 		* Look for the corresponding "uuid", a 32 character long string. This is the KC ID
 		* If this option does not work, refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
@@ -32,7 +34,7 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 
 	![multi-select](https://raw.githubusercontent.com/rodekruis/xls-import/NLRC-updates/multi-select.png)
 
-1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter. All columns need to be formatted as text prior to entering '1' or '0'
+1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter.
 1. Repeating groups appear in a new sheet
 1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
 
@@ -65,11 +67,6 @@ Note: post.py outputs a date-stamped log with a name such as: ```kcpostlog__2018
 ```
 $ more "$(ls -rt | tail -n1)"
 ```
-
-# Frequently Asked Questions
-
-- [I get an XLRDError](#i-get-an-xlrderror)
-
 
 ## I get an XLRDError
 
