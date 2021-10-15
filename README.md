@@ -24,7 +24,7 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 
 	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://<span></span>kobo.humanitarianresponse.info/#/forms/"KPI ID"/summary, or whatever server you are using)
 	* The KC ID can be easily found with the api:
-		* Navigate to https://ee.humanitarianresponse.info/api/v1/forms (or the v1 api of your server)
+		* Navigate to https://kc.humanitarianresponse.info/api/v1/forms (or the v1 api of your server)
 		* Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
 		* Look for the corresponding "uuid", a 32 character long string. This is the KC ID
 		* If this option does not work, refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
