@@ -61,11 +61,6 @@ Note: post.py outputs a date-stamped log with a name such as: ```kcpostlog__2018
 $ more "$(ls -rt | tail -n1)"
 ```
 
-# Frequently Asked Questions
-
-- [I get an XLRDError](#i-get-an-xlrderror)
-
-
 ## I get an XLRDError
 
 If you get
