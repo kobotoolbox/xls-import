@@ -22,7 +22,7 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 
     ![IDs](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
 
-	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
+	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://<span></span>kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
 	* The KC ID can be easily found with the api:
 		* Navigate to https://kcnew.ifrc.org/api/v1/forms (or the v1 api of your server)
 		* Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
