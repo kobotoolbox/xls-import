@@ -8,17 +8,30 @@ xls2xml.py and post.py run under python 2.7.
 ```
 $ pip install lxml
 $ pip install xlrd
-$ python xls2xml.py SPREADSHEETNAME.xlsx
+$ python xls2xml.py SPREADSHEETNAME.xls
 ```
 
+#### Restrictions
+- It currently only supports excel 97-2003 workbooks, so with the .xls extention
+- Nested groups are not supported
+
+
 #### Underlying Spreadsheet Rules
-1. The spreadsheet must include a worksheet (following all the content worksheets) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID. Refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
+1. The spreadsheet should be formatted as an excel 97-2003 workbook, so with the .xls extention
+1. The spreadsheet must include a worksheet (following all the content worksheets, so it should be the last worksheet in your xls-file) called ```IDSheet```. This worksheet contains a minimum of two cells. Cell B1 contains the KPI ID. Cell B2 contains the KC ID.
+    ![IDs](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
+	* The KPI ID is a 22 character long string and can be found in the url of the form in kobotoolbox (https://kobonew.ifrc.org/#/forms/"KPI ID"/summary, or whatever server you are using)
+	* The KC ID can be easily found with the api:
+		* Navigate to https://kcnew.ifrc.org/api/v1/forms (or the v1 api of your server)
+		* Search for KPI ID by hitting ctrl+F (or cmd+F on osx) and pasting the KPI ID, you should have two matches
+		* Look for the corresponding "uuid", a 32 character long string. This is the KC ID
+		* If this option does not work, refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
 
-    ![screen shot 2017-12-20 at 10 58 17 pm](https://user-images.githubusercontent.com/192568/34240033-6399f582-e5d9-11e7-9e0f-fd86c946e5a9.png)
-
-1.  \_\_version\_\_ and other meta columns follow content columns. \_\_version\_\_ is the first column following the content.
-1.  Format all cells as text and pass them through verbatim to the XML output. See #4 (issuecomment-352513439) and #5 (issuecomment-352816376)
+1.  \_\_version\_\_ and other meta columns follow content columns. \_\_version\_\_ should be the first column following the content.
 1. Select_multiples columns may be formatted either like column G in the image below, or as boolean columns like columns H - K.
+
+	![multi-select](https://raw.githubusercontent.com/rodekruis/xls-import/NLRC-updates/multi-select.png)
+
 1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter. All columns need to be formatted as text prior to entering '1' or '0'
 1. Repeating groups appear in a new sheet
 1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
@@ -49,7 +62,6 @@ $ more "$(ls -rt | tail -n1)"
 # Frequently Asked Questions
 
 - [I get an XLRDError](#i-get-an-xlrderror)
-- [How do I determine the KPI and KC IDs?](#how-do-i-determine-the-kpi-and-kc-ids)
 
 
 ## I get an XLRDError
@@ -58,10 +70,6 @@ If you get
 ```
 xlrd.biffh.XLRDError: No sheet named <'IDSheet'>
 ```
-be sure to add a new sheet named
-'IDSheet'. Place the KPI ID in cell B1, and the KC ID in cell B2.
-
-## How do I determine the KPI and KC IDs?
-Refer to this video to determine how to find those two IDs: https://youtu.be/vMz_Q0yqpm8
+be sure to add a new sheet named ```IDSheet``` and make sure it's the last worksheet of the workbook. Place the KPI ID in cell B1, and the KC ID in cell B2.
 
 
