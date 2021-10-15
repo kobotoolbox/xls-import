@@ -43,7 +43,7 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 ## Uploading the zip on the web
 
 You can upload the zip file from the previous step here:
-    https://kc.humanitarianresponse.info/YourKoBoUserName/bulk-submission-form
+    https://<span></span>kc.humanitarianresponse.info/"YourKoBoUserName"/bulk-submission-form
     
 It will show the if the import was successful.
 
