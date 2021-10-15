@@ -34,7 +34,7 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 
 	![multi-select](https://raw.githubusercontent.com/rodekruis/xls-import/NLRC-updates/multi-select.png)
 
-1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter. All columns need to be formatted as text prior to entering '1' or '0'
+1. If using boolean select_multiple columns, the headers use the character "/" as an element name/content delimiter.
 1. Repeating groups appear in a new sheet
 1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
 
