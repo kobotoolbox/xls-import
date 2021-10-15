@@ -36,9 +36,16 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 1. Repeating groups appear in a new sheet
 1. Non-repeating groups appear in the first sheet. columns contain the colon character ':' as a hierarchy separator, such as three_favorite_haircuts:
 
+# Uploading the XML
 
+## Uploading the zip on the web
 
-## post.py
+You can upload the zip file from the previous step here:
+    https://kc.humanitarianresponse.info/YourKoBoUserName/bulk-submission-form
+    
+It will show the if the import was successful.
+
+## With post.py
 
 post.py will post tempfiles/*.xml to kc.kobotools.org:
 
@@ -71,5 +78,3 @@ If you get
 xlrd.biffh.XLRDError: No sheet named <'IDSheet'>
 ```
 be sure to add a new sheet named ```IDSheet``` and make sure it's the last worksheet of the workbook. Place the KPI ID in cell B1, and the KC ID in cell B2.
-
-
