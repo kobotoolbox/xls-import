@@ -32,8 +32,10 @@ $ python xls2xml.py SPREADSHEETNAME.xls
 1.  \_\_version\_\_ and other meta columns follow content columns. \_\_version\_\_ should be the first column following the content.
 1. The other two mandatory meta columns are \_uuid and \_index.
     * To automatically generate the \_uuid field you can use the following formula in Excel:
+```
     =LOWER(CONCATENATE(DEC2HEX(RANDBETWEEN(0,POWER(16,8)),8),"-",DEC2HEX(RANDBETWEEN(0,POWER(16,4)),4),"-","4",DEC2HEX(RANDBETWEEN(0,POWER(16,3)),3),"-",DEC2HEX(RANDBETWEEN(8,11)),DEC2HEX(RANDBETWEEN(0,POWER(16,3)),3),"-",DEC2HEX(RANDBETWEEN(0,POWER(16,8)),8),DEC2HEX(RANDBETWEEN(0,POWER(16,4)),4)))
     * The \_index field should be unique integer numbers
+```
 1. Select_multiples columns may be formatted either like column G in the image below, or as boolean columns like columns H - K.
 
 	![multi-select](https://raw.githubusercontent.com/rodekruis/xls-import/NLRC-updates/multi-select.png)
