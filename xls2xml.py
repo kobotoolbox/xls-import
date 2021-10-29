@@ -144,7 +144,8 @@ def _gen_group_index_list(book):
 
 def _parse_multi_select_data(multi_selects, header, text):
     """ Look at data and if the option is selected, add to multi_selects """
-    if text == '1':
+    if str(int(text)) == '1':
+        print "Entra para " + header
         name, value = header.split('/')
         if name not in multi_selects:
             multi_selects[name] = []
@@ -156,18 +157,34 @@ def _gen_multi_selects(parent_node, multi_selects):
         colname_el = ET.SubElement(parent_node, key)
         colname_el.text = " ".join(value)
 
-def _parse_group_data(groups, header, text):
-    name, value = header.split('::')
-    if name not in groups:
-            groups[name] = {}
-    groups[name][value]=text
+def _gen_multi_selects_root(parent_node, multi_selects):
+    """ Generate XML elements from multi_selects """
+    result = {}
+    for key, value in multi_selects.items():
+        result[key] = " ".join(value)
+    return result
 
-def _gen_groups(root, groups):
+def _parse_group_data(groups, header, text):
+#    print header
+#    name, value = header.split('::')
+#    if name not in groups:
+#            groups[name] = {}
+#    groups[name][value]=text
+    ungrouped = header.split('::')
+    if ungrouped[0] not in groups:
+        groups[ungrouped[0]] = {}
+    groups[ungrouped[0]]['::'.join(ungrouped[1:])] = text
+
+
+def _gen_groups(root, groups, parsed_multi_selects):
     for key, value in groups.items():
         colname_el = ET.SubElement(root, key)
         for k, v in value.items():
             el = ET.SubElement(colname_el, k)
-            el.text = v
+            if k in parsed_multi_selects:
+                el.text = parsed_multi_selects[k]
+            else:
+                el.text = unicode(v)
 
 
 def _gen_xml_elements0(book, headers, row):
@@ -200,15 +217,27 @@ def _gen_xml_elements0(book, headers, row):
     for i, colname in enumerate(headers[0][:version_col_index]):
         text0 = data_sheet0.cell_value(row,i)
         if "/" in colname:
-            _parse_multi_select_data(multi_selects, colname, text0)
-        if "::" in colname:
-            _parse_group_data(groups, colname, text0)
+            _parse_multi_select_data(multi_selects, colname.split('::')[-1], text0)
+            if "::" in colname:
+#                colname = colname.split('/')[0]
+                _parse_group_data(groups, colname.split('/')[0], text0)
+#                colname = colname.split('::')[-1]
         else:
-            colname_el = ET.SubElement(root, colname)
-            colname_el.text = text0
+            if "::" in colname:
+#                colname = colname.split('/')[0]
+                _parse_group_data(groups, colname, text0)
+#                colname = colname.split('::')[-1]
+            else:
+#                colname = colname.split('/')[0]
+                colname_el = ET.SubElement(root, colname)
+                if type(text0) != unicode:
+                    text0 = unicode(text0)
+                colname_el.text = unicode(text0)
+#        if "/" in colname:
+#            _parse_multi_select_data(multi_selects, colname, text0)
 
-    _gen_multi_selects(root, multi_selects)
-    _gen_groups(root, groups)
+    parsed_multi_selects = _gen_multi_selects_root(root, multi_selects)
+    _gen_groups(root, groups, parsed_multi_selects)
 
     elems = {row: {}}
     elems[row]['root'] = root
@@ -241,7 +270,7 @@ def _gen_group_detail(book, row, headers, data_sheet0, root):
                                 _parse_multi_select_data(multi_selects, header, text)
                             else:
                                 column_el = ET.SubElement(group_sheetname_el,header)
-                                column_el.text = text
+                                column_el.text = unicode(text)
 
                         _gen_multi_selects(group_sheetname_el, multi_selects)
 
@@ -265,7 +294,7 @@ def gen_xml(path):
             _gen_group_detail(book, row, headers, data_sheet0, root)
 
         # Create __version__ element
-        version_el = ET.SubElement(root,"__version__")
+            version_el = ET.SubElement(root,"__version__")
         version_col_index = _get_col_index(0,headers, '__version__')
         version_el.text = str(data_sheet0.cell_value(row,version_col_index))
 
